@@ -1,0 +1,40 @@
+version: '3.9'
+
+# Production override — add resource limits, restart policies, logging
+services:
+  backend:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    environment:
+      - LOG_LEVEL=WARNING
+      - CORS_ORIGINS=["https://your-frontend-domain.com"]
+
+  frontend:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  prometheus:
+    restart: always
+
+  grafana:
+    restart: always
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-changeme_in_production}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false

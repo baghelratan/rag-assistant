@@ -1,0 +1,108 @@
+version: '3.9'
+
+services:
+  # ─── Backend (FastAPI) ────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rag_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PRIMARY_LLM=${PRIMARY_LLM:-gemini}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-1.5-flash}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+      - EMBED_MODEL=${EMBED_MODEL:-all-MiniLM-L6-v2}
+      - RERANKER_MODEL=${RERANKER_MODEL:-cross-encoder/ms-marco-MiniLM-L-6-v2}
+      - CHUNK_SIZE=${CHUNK_SIZE:-512}
+      - CHUNK_OVERLAP=${CHUNK_OVERLAP:-64}
+      - TOP_K_RETRIEVAL=${TOP_K_RETRIEVAL:-20}
+      - TOP_K_RERANK=${TOP_K_RERANK:-5}
+      - CHROMA_PERSIST_DIR=/app/data/chroma
+      - BM25_INDEX_DIR=/app/data/bm25
+      - SESSION_DB_PATH=/app/data/sessions.db
+      - CACHE_DIR=/app/data/cache
+      - RATE_LIMIT=${RATE_LIMIT:-60/minute}
+      - MAX_QUERY_LENGTH=${MAX_QUERY_LENGTH:-2000}
+      - HALLUCINATION_THRESHOLD=${HALLUCINATION_THRESHOLD:-0.6}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CORS_ORIGINS=["http://localhost:3000","http://localhost:80","http://frontend"]
+    volumes:
+      - rag_data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - rag_network
+
+  # ─── Frontend (React + Nginx) ─────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rag_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - rag_network
+
+  # ─── Prometheus ───────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: rag_prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=7d'
+    networks:
+      - rag_network
+
+  # ─── Grafana ──────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: rag_grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - rag_network
+
+volumes:
+  rag_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  rag_network:
+    driver: bridge
