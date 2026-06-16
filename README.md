@@ -209,20 +209,8 @@ pytest tests/ --cov=app --cov-report=html
 
 ---
 
-## 🚂 Monolithic Cloud Deployment (Railway)
-
-For production hosting, we provide a unified Docker container configuration. In this mode, the React frontend is compiled into static assets and served directly by the FastAPI backend on a single port—meeting hobby tier or single-app constraints.
-
-To deploy in **one click**:
-1. Push your repository to your GitHub account.
-2. Link the repository to your [Railway Dashboard](https://railway.app).
-3. Set the root directory of the Railway service to `/` (so it picks up the root `Dockerfile`).
-4. **Important**: Add a **Persistent Volume** mounted at `/app/data` to ensure your ChromaDB index and metadata are saved across container redeployments.
-5. Add your `GEMINI_API_KEY` (and `OPENAI_API_KEY`) as Railway Environment Variables.
-6. Generate a public domain in Railway and access your live application.
-
-For a step-by-step breakdown, see the [Railway Deployment Guide](docs/deployment_railway.md).
-
+For a deeper dive into design choices, check out [docs/architecture.md](docs/architecture.md) and 
+[docs/evaluation_report.md](docs/evaluation_report.md).
 ---
 
 ## 📄 License
