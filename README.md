@@ -1,4 +1,4 @@
-# 🤖 Local-First RAG Assistant
+# 🤖  RAG Assistant
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18-20232a?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev)
@@ -6,8 +6,8 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-An enterprise-ready, local-first **Retrieval-Augmented Generation (RAG)** assistant. It is designed to ingest, process, and search **10,000+ mixed-format documents** (PDFs, HTML, CSVs) completely locally—giving you high-fidelity streaming responses, strict privacy boundaries, real-time telemetry, and zero data leakage.
-
+An enterprise-ready, **Retrieval-Augmented Generation (RAG)** assistant. It is designed to ingest, process, and search **10,000+ mixed-format documents** (PDFs, HTML, CSVs) completely locally—giving you high-fidelity streaming responses, strict privacy boundaries, real-time telemetry, and zero data leakage.
+Live link:https://rag-assistant-production-1830.up.railway.app/
 ---
 
 ## 💡 Why We Built This
